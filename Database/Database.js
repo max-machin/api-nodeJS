@@ -6,4 +6,4 @@ const connection = mysql.createConnection({
     database: 'api-nodejs'
 })
 
-return connection.connect()
+return connection.connect() 
