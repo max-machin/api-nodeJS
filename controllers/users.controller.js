@@ -23,6 +23,7 @@ const usersController = {
     },
 
     register: async (req, res) => {
+
         try {
             const {email, password, firstname, lastname, id_groupes} = req.body
 
@@ -70,6 +71,40 @@ const usersController = {
             if (!email || !password){
                 return res.status(400).json({ErrorMessage: "Please enter all required fields"})
             }
+
+            const getUser = "SELECT * from users where email = ?"
+
+            const [findUser] = await pool.query(getUser, [email])
+
+            if (findUser.length > 0)
+            {
+                const passwordCorrect = await bcrypt.compare(
+                    password,
+                    findUser[0].password
+                )
+
+                if (!passwordCorrect){
+
+                    return res.status(401).json({message: "Invalid email or password"})
+
+                } else {
+
+                    res.status(200).json({message: "Login successfull"})
+                    const token = jwt.sign(
+                        {
+                          user: findUser[0].id,
+                        },
+                        process.env.JWT_SECRET
+                    );
+                    //send the token in an HTTP only cookie
+                    res.cookie("token", token, { httpOnly: true }).send();
+                }
+
+            } else {
+                return res.status(400).json({message: "Nobody find"})
+            }
+                
+            
         } catch(error){
             console.log(error)
         }
