@@ -89,15 +89,19 @@ const usersController = {
 
                 } else {
 
-                    res.status(200).json({message: "Login successfull"})
-                    const token = jwt.sign(
-                        {
-                          user: findUser[0].id,
-                        },
-                        process.env.JWT_SECRET
+                    
+                    const token = jwt.sign({
+                        username: findUser[0].firstname,
+                        userId: findUser[0].id
+                      },
+                      'SECRETKEY', {
+                        expiresIn: '7d'
+                      }
                     );
+                    
                     //send the token in an HTTP only cookie
-                    res.cookie("token", token, { httpOnly: true }).send();
+                    res.cookie("token", token, { httpOnly: true });
+                    res.status(200).send({message: "Login successfull", token: token, user: findUser[0]})
                 }
 
             } else {
