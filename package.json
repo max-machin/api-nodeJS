@@ -12,5 +12,8 @@
     "mysql2": "^2.3.3",
     "node-mysql": "^0.4.2",
     "nodemon": "^2.0.20"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^8.5.9"
   }
 }
