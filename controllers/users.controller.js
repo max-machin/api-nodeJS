@@ -1,6 +1,10 @@
 const express = require('express')
 const app = express()
 
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
+
 const pool = require('../services/database')
 
 
@@ -43,17 +47,31 @@ const usersController = {
             
             const sql = "INSERT INTO users (email, password, firstname, lastname, id_groupes) values (?, ?, ?, ?, ?)"
 
-            const [rows, fields] = await pool.query(sql, [email, password, firstname, lastname, id_groupes])
+            const salt = await bcrypt.genSalt()
+            const passwordHash = await bcrypt.hash(password, salt)
 
-            res.json({
-                data: rows
-            })
+            const [rows, fields] = await pool.query(sql, [email, passwordHash, firstname, lastname, id_groupes])
+
+            res.status(200).json({
+                message: "Register successfull, welcome!",
+            });
             
         } catch (error) {
-            res.status(401).json({
-                message: "User not successful created",
-                error: error.mesage,
-            })
+            res.status(500).json({
+                error: err
+              });
+        }
+    },
+
+    login: async (req, res) => {
+        try {
+            const {email, password} = req.body
+
+            if (!email || !password){
+                return res.status(400).json({ErrorMessage: "Please enter all required fields"})
+            }
+        } catch(error){
+            console.log(error)
         }
     }
 }
