@@ -114,7 +114,22 @@ const usersController = {
         }
     },
 
+    getMe: async (req, res) => {
+        try {
+            const id_user = req.params['id']
+            console.log(id_user)
+            const getCurrent = 'SELECT users.firstname as prenom, users.lastname as nom, users.email, groupes.name as groupe FROM users INNER JOIN groupes ON users.id_groupes = groupes.id WHERE users.id = ?'
 
+            const [ rows, fields ] = await pool.query(getCurrent, id_user)
+
+            res.json({
+                user: rows
+            })
+            console.log(rows)
+        } catch (error){
+            console.log(error)
+        }
+    }
 }
 
 module.exports = usersController
