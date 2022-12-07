@@ -14,8 +14,10 @@ app.use(express.json())
 require('dotenv').config()
 
 const usersRouter = require('./routes/users.router')
+const groupesRouter = require('./routes/groupes.router')
 
 app.use('/user', usersRouter)
+app.use('/groupes', groupesRouter)
 
 /* Index route */
 app.get('/', (req, res) => {
