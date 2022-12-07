@@ -12,7 +12,7 @@ const pool = require('../services/database')
 const usersController = {
     getAll: async(req, res) => {
         try {
-            const [rows, fields] = await pool.query('SELECT * from users')
+            const [rows, fields] = await pool.query('SELECT firstname, lastname from users')
             res.json({
                 data: rows
             })
@@ -59,7 +59,7 @@ const usersController = {
             
         } catch (error) {
             res.status(500).json({
-                error: err
+                error: error
               });
         }
     },
@@ -112,7 +112,9 @@ const usersController = {
         } catch(error){
             console.log(error)
         }
-    }
+    },
+
+
 }
 
 module.exports = usersController
