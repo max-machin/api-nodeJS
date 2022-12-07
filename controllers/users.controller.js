@@ -100,7 +100,8 @@ const usersController = {
                     );
                     
                     //send the token in an HTTP only cookie
-                    res.cookie("token", token, { httpOnly: true });
+                    res.cookie("token", token, {httpOnly: true});
+                    res.cookie("id", findUser[0].id, {httpOnly: true});
                     res.status(200).send({message: "Login successfull", token: token, user: findUser[0]})
                 }
 
@@ -117,15 +118,50 @@ const usersController = {
     getMe: async (req, res) => {
         try {
             const id_user = req.params['id']
-            console.log(id_user)
+
             const getCurrent = 'SELECT users.firstname as prenom, users.lastname as nom, users.email, groupes.name as groupe FROM users INNER JOIN groupes ON users.id_groupes = groupes.id WHERE users.id = ?'
 
             const [ rows, fields ] = await pool.query(getCurrent, id_user)
 
+            res.status(200).send({message: "Group add with success"})
+
+
+        } catch (error){
+            console.log(error)
+        }
+    },
+
+    addGroupe: async (req, res) => {
+        try {
+            const id_groupe = req.body.id_groupes
+
+            const id_user = req.cookies.id
+
+            console.log(id_groupe, id_user)
+
+            const [rows, fields] = await pool.query(`UPDATE users SET id_groupes = ${id_groupe} WHERE id = ${id_user}`)
+
             res.json({
-                user: rows
+                rows: rows
             })
-            console.log(rows)
+        } catch (error){
+            console.log(error)
+        }
+    },
+
+    updateData: async (req, res) => {
+        try {
+            const {email, password, firstname, lastname} = req.body
+
+            const id_user = req.cookies.id
+
+            console.log(id_groupe, id_user)
+
+            const [rows, fields] = await pool.query(`UPDATE users SET id_groupes = ${id_groupe} WHERE id = ${id_user}`)
+
+            res.json({
+                rows: rows
+            })
         } catch (error){
             console.log(error)
         }
