@@ -7,7 +7,15 @@ const jwt = require("jsonwebtoken");
 
 const pool = require('../services/database')
 
-
+const generatePassword = async (password) => {
+    return await new Promise((res, rej) => {
+     // Your hash logic 
+     bcrypt.hash(password, 10, (err, hash) => {
+       if (err) rej(err);
+       res(hash);
+      });
+    });
+};
 
 const usersController = {
     getAll: async(req, res) => {
@@ -100,7 +108,8 @@ const usersController = {
                     );
                     
                     //send the token in an HTTP only cookie
-                    res.cookie("token", token, { httpOnly: true });
+                    res.cookie("token", token, {httpOnly: true});
+                    res.cookie("id", findUser[0].id, {httpOnly: true});
                     res.status(200).send({message: "Login successfull", token: token, user: findUser[0]})
                 }
 
@@ -114,7 +123,84 @@ const usersController = {
         }
     },
 
+    getMe: async (req, res) => {
+        try {
+            const id_user = req.params['id']
 
+            const getCurrent = 'SELECT users.firstname as prenom, users.lastname as nom, users.email, groupes.name as groupe FROM users INNER JOIN groupes ON users.id_groupes = groupes.id WHERE users.id = ?'
+
+            const [ rows, fields ] = await pool.query(getCurrent, id_user)
+
+            res.status(200).send({message: "Group add with success"})
+
+
+        } catch (error){
+            console.log(error)
+        }
+    },
+
+    addGroupe: async (req, res) => {
+        try {
+            const id_groupe = req.body.id_groupes
+
+            const id_user = req.cookies.id
+
+
+            const [rows, fields] = await pool.query(`UPDATE users SET id_groupes = ${id_groupe} WHERE id = ${id_user}`)
+
+            res.json({
+                rows: rows
+            })
+        } catch (error){
+            console.log(error)
+        }
+    },
+
+    updateData: async (req, res) => {
+        try {
+
+            const id_user = req.cookies.id
+
+            const updatedFields = []
+
+            let isError = false
+
+            if (req.body.password){
+                const hashedPassword = await generatePassword(req.body.password)
+
+                Object.entries(req.body).map((key, value) => {
+                    if (!key.slice(',')[1]){
+                        return isError = true
+                    } else {
+                        if (key.slice(',')[0] === "password"){
+                            updatedFields.push(key.slice(',')[0] + " = " + "'" + hashedPassword + "'")
+                        } else {
+                            updatedFields.push(key.slice(',')[0] + " = " + "'" + key.slice(',')[1] + "'")
+                        }
+                    }
+                })    
+            } else {
+                Object.entries(req.body).map((key, value) => {
+                    if (!key.slice(',')[1]){
+                        return isError = true
+                    } else {
+                        updatedFields.push(key.slice(',')[0] + " = " + "'" + key.slice(',')[1] + "'")
+                    }
+                })  
+            }
+
+            const [rows] = await pool.query("UPDATE users SET "+ updatedFields +" , updatedAt = NOW() WHERE id = " + id_user +"")
+
+            if(isError !== true){
+                res.status(200).json({message: "Update successfully"})
+            } else {
+                return res.status(400).json({ErrorMessage: "Please enter all required fields"})
+            }
+
+        } catch (error){
+            console.log(error)
+        }
+    }
 }
 
 module.exports = usersController

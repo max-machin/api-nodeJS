@@ -1,12 +1,14 @@
 /* Require express */
 const express = require('express')
 const app = express()
-
+const cookieParser = require('cookie-parser');
 /* Listening port */
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
     console.log(`Example app listening on port ${PORT}`)
 })
+
+app.use(cookieParser())
 
 app.use(express.urlencoded({extended: false}))
 app.use(express.json())

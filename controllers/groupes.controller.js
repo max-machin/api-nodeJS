@@ -17,10 +17,6 @@ const groupesController = {
 
     getAllUsersGroupes: async ( req, res ) => {
         try {
-            // const [rows, fields] = await pool.query('SELECT groupes.name, users.firstname, users.lastname FROM users INNER JOIN groupes ON users.id_groupes = groupes.id')
-            // res.json({
-            //     data: rows
-            // })
             const [rows, fields] = await pool.query('SELECT groupes.name, GROUP_CONCAT("[prenom: " , users.firstname, " nom: ", users.lastname ,"]") as users FROM users INNER JOIN groupes ON groupes.id = users.id_groupes GROUP BY groupes.name')
             res.json({
                 data: rows
