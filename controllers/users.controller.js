@@ -7,7 +7,15 @@ const jwt = require("jsonwebtoken");
 
 const pool = require('../services/database')
 
-
+const generatePassword = async (password) => {
+    return await new Promise((res, rej) => {
+     // Your hash logic 
+     bcrypt.hash(password, 10, (err, hash) => {
+       if (err) rej(err);
+       res(hash);
+      });
+    });
+};
 
 const usersController = {
     getAll: async(req, res) => {
@@ -137,7 +145,6 @@ const usersController = {
 
             const id_user = req.cookies.id
 
-            console.log(id_groupe, id_user)
 
             const [rows, fields] = await pool.query(`UPDATE users SET id_groupes = ${id_groupe} WHERE id = ${id_user}`)
 
@@ -151,13 +158,38 @@ const usersController = {
 
     updateData: async (req, res) => {
         try {
-            const {email, password, firstname, lastname} = req.body
 
             const id_user = req.cookies.id
 
-            console.log(id_groupe, id_user)
+            const updatedFields = []
 
-            const [rows, fields] = await pool.query(`UPDATE users SET id_groupes = ${id_groupe} WHERE id = ${id_user}`)
+            if (req.body.password){
+                const hashedPassword = await generatePassword(req.body.password)
+
+                Object.entries(req.body).map((key, value) => {
+                    if (!key.slice(',')[1]){
+                        res.json({message: "please insert all required values"})
+                    } else {
+                        if (key.slice(',')[0] === "password"){
+                            
+                            updatedFields.push(key.slice(',')[0] + " = " + "'" + hashedPassword + "'")
+    
+                        } else {
+                            updatedFields.push(key.slice(',')[0] + " = " + "'" + key.slice(',')[1] + "'")
+                        }
+                    }
+                })    
+            } else {
+                Object.entries(req.body).map((key, value) => {
+                    if (!key.slice(',')[1]){
+                        res.json({message: "please insert all required values"})
+                    } else {
+                        updatedFields.push(key.slice(',')[0] + " = " + "'" + key.slice(',')[1] + "'")
+                    }
+                })  
+            }
+
+            const [rows, fields] = await pool.query("UPDATE users SET "+ updatedFields +" WHERE id = " + id_user +"")
 
             res.json({
                 rows: rows
