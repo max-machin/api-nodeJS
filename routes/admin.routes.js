@@ -11,5 +11,6 @@ router.patch('/user/:id', requireAuthAdmin, adminController.updateUser)
 router.delete('/delete/:id', requireAuthAdmin, adminController.deleteUser)
 
 router.post('/create/groupe', requireAuthAdmin, adminController.createGroupe)
+router.post('/groupe/:id', requireAuthAdmin, adminController.updateGroupe)
 
 module.exports = router

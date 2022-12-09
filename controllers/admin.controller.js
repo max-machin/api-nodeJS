@@ -103,6 +103,41 @@ const adminController = {
         } catch (error) {
             console.log(error)
         }
+    },
+
+    updateGroupe: async (req, res, next) => {
+        try {
+
+            const {name} = req.body
+
+            const id_groupe = req.params['id']
+
+            if (!name)
+                return res
+                    .status(400)
+                    .json({
+                        Message: "Please enter name for groupe"
+                    })
+            
+            if (name.length < 3){
+                return res
+                    .status(400)
+                    .json({
+                        Message: "The group name must have 3 characters"
+                    })
+            }
+            const addGroupe = "UPDATE groupes SET name = " + '"' + name + '"' + " , updatedAt = NOW () WHERE id = " + id_groupe + " "
+
+            const [request] = await pool.query(addGroupe)
+
+            return res
+                .status(200)
+                .json({
+                    Message: "Groupe updated successfully"
+                })
+        } catch (error) {
+            console.log(error)
+        }
     }
 }
 
