@@ -59,6 +59,24 @@ const adminController = {
         } catch (error){
             console.log(error)
         }
+    },
+
+    deleteUser: async (req, res, next) => {
+        try {
+            const id_user = req.params['id']
+
+            if (id_user != req.cookies.id){
+                const sql = "DELETE FROM users WHERE id = ?"
+
+                const deleteReq = await pool.query(sql, [id_user])
+
+                res.status(200).send({message: "User delete with success"})
+            } else {
+                return res.status(400).json({ErrorMessage: "You can't delete yourself"})
+            }
+        } catch (error) {
+            console.log(error)
+        }
     }
 }
 
