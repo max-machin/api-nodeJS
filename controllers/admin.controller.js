@@ -77,6 +77,32 @@ const adminController = {
         } catch (error) {
             console.log(error)
         }
+    },
+
+    createGroupe: async (req, res, next) => {
+        try {
+
+            const name = req.body
+
+            if (!name)
+                return res
+                    .status(400)
+                    .json({
+                        Message: "Please enter name for groupe"
+                    })
+            
+            const addGroupe = "INSERT INTO groupes (name) values (?)"
+
+            const [request] = await pool.query(addGroupe, [name])
+
+            return res
+                .status(200)
+                .json({
+                    Message: "Groupe add successfully"
+                })
+        } catch (error) {
+            console.log(error)
+        }
     }
 }
 
