@@ -189,7 +189,7 @@ const usersController = {
                 })  
             }
 
-            const [rows] = await pool.query("UPDATE users SET "+ updatedFields +" WHERE id = " + id_user +"")
+            const [rows] = await pool.query("UPDATE users SET "+ updatedFields +" , updatedAt = NOW() WHERE id = " + id_user +"")
 
             if(isError !== true){
                 res.status(200).json({message: "Update successfully"})
