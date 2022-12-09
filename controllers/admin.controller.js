@@ -79,6 +79,8 @@ const adminController = {
         }
     },
 
+
+
     createGroupe: async (req, res, next) => {
         try {
 
@@ -134,6 +136,25 @@ const adminController = {
                 .status(200)
                 .json({
                     Message: "Groupe updated successfully"
+                })
+        } catch (error) {
+            console.log(error)
+        }
+    },
+
+    deleteGroupe: async (req, res, next) => {
+        try {
+
+            const id_groupe = req.params['id']
+           
+            const sql = "DELETE FROM groupes WHERE id = ?"
+
+            const deleteReq = await pool.query(sql, [id_groupe])
+
+            return res
+                .status(200)
+                .json({
+                    Message: "Groupe deleted successfully"
                 })
         } catch (error) {
             console.log(error)
