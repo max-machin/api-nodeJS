@@ -163,17 +163,17 @@ const usersController = {
 
             const updatedFields = []
 
+            let isError = false
+
             if (req.body.password){
                 const hashedPassword = await generatePassword(req.body.password)
 
                 Object.entries(req.body).map((key, value) => {
                     if (!key.slice(',')[1]){
-                        res.json({message: "please insert all required values"})
+                        return isError = true
                     } else {
                         if (key.slice(',')[0] === "password"){
-                            
                             updatedFields.push(key.slice(',')[0] + " = " + "'" + hashedPassword + "'")
-    
                         } else {
                             updatedFields.push(key.slice(',')[0] + " = " + "'" + key.slice(',')[1] + "'")
                         }
@@ -182,18 +182,21 @@ const usersController = {
             } else {
                 Object.entries(req.body).map((key, value) => {
                     if (!key.slice(',')[1]){
-                        res.json({message: "please insert all required values"})
+                        return isError = true
                     } else {
                         updatedFields.push(key.slice(',')[0] + " = " + "'" + key.slice(',')[1] + "'")
                     }
                 })  
             }
 
-            const [rows, fields] = await pool.query("UPDATE users SET "+ updatedFields +" WHERE id = " + id_user +"")
+            const [rows] = await pool.query("UPDATE users SET "+ updatedFields +" WHERE id = " + id_user +"")
 
-            res.json({
-                rows: rows
-            })
+            if(isError !== true){
+                res.status(200).json({message: "Update successfully"})
+            } else {
+                return res.status(400).json({ErrorMessage: "Please enter all required fields"})
+            }
+
         } catch (error){
             console.log(error)
         }
