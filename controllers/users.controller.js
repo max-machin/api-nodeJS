@@ -7,16 +7,6 @@ const jwt = require("jsonwebtoken");
 
 const pool = require('../services/database')
 
-const generatePassword = async (password) => {
-    return await new Promise((res, rej) => {
-     // Your hash logic 
-     bcrypt.hash(password, 10, (err, hash) => {
-       if (err) rej(err);
-       res(hash);
-      });
-    });
-};
-
 const usersController = {
     getAll: async(req, res) => {
         try {
@@ -110,6 +100,7 @@ const usersController = {
                     //send the token in an HTTP only cookie
                     res.cookie("token", token, {httpOnly: true});
                     res.cookie("id", findUser[0].id, {httpOnly: true});
+                    res.cookie("isAdmin", findUser[0].isAdmin, {httpOnly: true})
                     res.status(200).send({message: "Login successfull", token: token, user: findUser[0]})
                 }
 
@@ -165,20 +156,30 @@ const usersController = {
 
             let isError = false
 
-            if (req.body.password){
-                const hashedPassword = await generatePassword(req.body.password)
+            let isErrorPassword = false
 
-                Object.entries(req.body).map((key, value) => {
-                    if (!key.slice(',')[1]){
-                        return isError = true
-                    } else {
-                        if (key.slice(',')[0] === "password"){
-                            updatedFields.push(key.slice(',')[0] + " = " + "'" + hashedPassword + "'")
+            if (req.body.password){
+                if (req.body.password.length > 5){
+                
+                    const salt = await bcrypt.genSalt()
+                    const passwordHash = await bcrypt.hash(req.body.password, salt)
+
+                    Object.entries(req.body).map((key, value) => {
+                        if (!key.slice(',')[1]){
+                            return isError = true
                         } else {
-                            updatedFields.push(key.slice(',')[0] + " = " + "'" + key.slice(',')[1] + "'")
+                            if (key.slice(',')[0] === "password"){
+                                updatedFields.push(key.slice(',')[0] + " = " + "'" + passwordHash + "'")
+                            } else {
+                                updatedFields.push(key.slice(',')[0] + " = " + "'" + key.slice(',')[1] + "'")
+                            }
                         }
-                    }
-                })    
+                    
+                    })   
+                } else {
+                    res.status(400).json({message: "Password must have 6 characters"})
+                    return isError = true
+                }
             } else {
                 Object.entries(req.body).map((key, value) => {
                     if (!key.slice(',')[1]){
@@ -189,12 +190,13 @@ const usersController = {
                 })  
             }
 
-            const [rows] = await pool.query("UPDATE users SET "+ updatedFields +" , updatedAt = NOW() WHERE id = " + id_user +"")
-
-            if(isError !== true){
-                res.status(200).json({message: "Update successfully"})
+            if (isError === true){
+                res.status(400).json({ErrorMessage: "Please enter all required fields"})
             } else {
-                return res.status(400).json({ErrorMessage: "Please enter all required fields"})
+
+                const [rows] = await pool.query("UPDATE users SET "+ updatedFields +" , updatedAt = NOW() WHERE id = " + id_user +"")
+
+                res.status(200).json({message: "Update successfully"})
             }
 
         } catch (error){
